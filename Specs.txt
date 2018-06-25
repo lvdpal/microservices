@@ -1,0 +1,15 @@
+Start spel
+V - Id aan spel toekennen
+- Bord tonen (3x3)
+V --- Kaart trekken
+V --- Bijhouden welke kaarten al getrokken zijn
+--- Bord tonen
+Set selecteren
+V Set controleren
+V Set scoren
+Kaarten aanvullen
+Bord vergroten (+3 kaarten)
+Einde spel
+- Score en naam opslaan
+V - Highscore tonen
+V - Tonen of score highscore is
