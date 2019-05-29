@@ -27,6 +27,16 @@ public class KeepHighScoreController {
         response.addCookie(cookie);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value="/get")
+    public Integer getHighScore(HttpServletRequest request, HttpServletResponse response) {
+        Cookie cookie = getHighScoreCookie(request);
+        if (cookie == null) {
+            return 0;
+        } else {
+            return Integer.valueOf(cookie.getValue());
+        }
+    }
+
     private Cookie getHighScoreCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {

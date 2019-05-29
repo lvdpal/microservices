@@ -82,53 +82,58 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
 	
 	function initializeGame() {
 		// console.log('initialize game');
-		$http.get('http://192.168.13.48:8080/cards/deck').then(function (response) {
+		$http.get('http://localhost:8096/cards/createGame').then(function (response) {
+			// got a shuffled deck of cards
 			$scope.game = response.data;
-			//shuffleDeck();
 			recieveDeck();
 		}, function (response) {
             // console.log('Error: ', response);
         });
-	}
-	
-	function shuffleDeck() {
-		// console.log('shuffle deck');
-		$http.post('http://192.168.12.171:8080/api/shuffle', $scope.game).then(function (response) {
-			$scope.game = reponse.data;
-			recieveDeck();
-		}, function (response) {
-			// console.log('Error: ', reponse);
-		});
 	}
 	
 	function recieveDeck() {
 		// console.log('recieve deck');
-		$http.post('http://192.168.13.110:8080/dealer/receivedeck', $scope.game).then(function (){
-    		$scope.deckOfCards = [];
-    		for (var i=0;i<4;i++) {
-    			drawThreeCards();
-    		}
-		}) 
+		$http.post('http://localhost:8092/cards/draw?numberOfCards=12', $scope.game).then(function(response) {
+			$scope.game = response.data.gameCards;
+			$scope.deckOfCards = [];
+			var newCards = response.data.drawnCards;
+			if (angular.isDefined(newCards) && newCards.length > 0) {
+				// maybe we need to fill some empty spots in the rows after we deleted some cards
+				var counter = 0;
+				angular.forEach($scope.deckOfCards, function(row) {
+					while (row.length < 3) {
+						row.push(newCards[counter]);
+						counter = counter + 1;
+					}
+				});
+				// no empty spots found so add all the cards to the deck
+				if (counter === 0) {
+					$scope.deckOfCards.push(newCards);
+				}
+			} else {
+				// No cards found realine cards
+				var allCardsLeft = [];
+				angular.forEach($scope.deckOfCards, function(row) {
+					angular.forEach(row, function(card) {
+						allCardsLeft.push(card);
+					});
+				});
+				$scope.deckOfCards = [];
+				var row = [];
+				angular.forEach(allCardsLeft, function(card) {
+					row.push(card);
+					if (row.length === 3) {
+						$scope.deckOfCards.push(row);
+						row = [];
+					}
+				});
+			}
+		});
 	}
-	
-    function createGame() {
-    	// console.log('create game');
-    	var urlCreateGame = 'http://localhost:8080/cards/createGame';
-    	$http.get(urlCreateGame).then(function(response) {
-            $scope.gameId = response.data;
-            // console.log('created game: ' + $scope.gameId);
-    		$scope.deckOfCards = [];
-    		for (var i=0;i<4;i++) {
-    			drawThreeCards();
-    		}
-        }, function (response) {
-            // console.log('Error: ', response);
-        });
-    }
 
     function drawThreeCards() {
     	// console.log('draw cards');
-    	$http.post('http://localhost:8080/cards/draw?numberOfCards=3', $scope.game).then(function(response) {
+    	$http.post('http://localhost:8092/cards/draw?numberOfCards=3', $scope.game).then(function(response) {
         	// console.log('we found some cards: ', response);
         	$scope.game = response.data.gameCards;
         	var newCards = response.data.drawnCards;
@@ -167,38 +172,20 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
             // console.log('Error: ', response);
         });
     }
-    
-    function getScore() {
-    	//var urlGetScore = 'http://localhost:8081/score/get?game=' + $scope.gameId;
-    	var urlGetScore = 'http://192.168.13.185:8080/player/1/score';
-    	$http.get(urlGetScore).then(function(response) {
-            $scope.score = response.data;
-        }, function (response) {
-            // console.log('Error: ', response);
-        });
-    }
-    
+
     function incrementScore() {
-    	//var urlIncreamentScore = 'http://localhost:8081/score/increment?game=' + $scope.gameId;
-    	var urlIncreamentScore = 'http://192.168.12.185:8080/player/1/score';
-    	$http.post(urlIncreamentScore).then(function(response) {
-            getScore();
-        }, function (response) {
-            // console.log('Error: ', response);
-        });
+		$scope.score = $scope.score + 1;
     }
 
     function isHighScore() {
-    	//var urlIsHighScore = 'http://localhost:8082/highscore/isHigh?highScore=' + $scope.score;
-    	var urlHighScores = 'http://192.168.13.48/api/score';
-    	$http.get(urlHighScores).then(function(response) {
-    		var scores = response.data;    		
-    		if ($scope.score > scores[0]) {
+    	$http.get('http://localhost/highscore/get:8095').then(function(response) {
+    		var score = response.data;
+    		if ($scope.score > score) {
     			// console.log('high score');
     			$scope.highScore = $scope.score;
     			setHighScore();
     		} else {
-    			$scope.highScore = scores[0];
+    			$scope.highScore = score;
     		}
         }, function (response) {
             // console.log('Error: ', response);
@@ -207,8 +194,7 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
 
     function isValidSet() {
     	// console.log('selectedCards', $scope.selectedCards);
-    	var urlIsValidSet = 'http://192.168.13.128:8080/api/checkset';
-    	//var urlIsValidSet = 'http://localhost:8090/check';
+    	var urlIsValidSet = 'http://localhost:8090/check';
     	$http.post(urlIsValidSet, $scope.selectedCards).
 	        then(function(response) {
 	        	var cardsToBeRemoved = $scope.selectedCards;
@@ -234,8 +220,7 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
     }
 
     function setHighScore() {
-//    	var urlSetHighScore = 'http://localhost:8082/highscore/set?highScore=' + $scope.score;
-    	var urlSetHighScore = 'http://192.168.13.48/api/score';
+    	var urlSetHighScore = 'http://localhost/highscore/get:8095';
     	$http.post(urlSetHighScore, $scope.score).then(function(response) {
             //$scope.gameId = response.data;
         }, function (response) {
@@ -250,7 +235,7 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
 				cards.push(card);
 			});
 		});
-    	$http.post('http://192.168.14.17:8080/api/contains_more_sets', cards).then(function(response){
+    	$http.post('http://localhost/containsSet:8091', cards).then(function(response){
     		$scope.moreSets = response.data;
     	}, function (response) {
             // console.log('Error: ', response);
