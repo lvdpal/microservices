@@ -1,10 +1,7 @@
 package org.jduchess.set.containssetservice.service;
 
 import org.jduchess.set.containssetservice.model.Card;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +10,7 @@ import java.util.List;
 @RestController
 public class ContainsSetController {
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.POST, value="/containsSet", consumes="application/json; charset=UTF-8", produces = "application/json; charset=UTF-8")
     public boolean containsSet(@RequestBody List<Card> board) {
         List<List<Card>> sets = createPossibleCombos(board);

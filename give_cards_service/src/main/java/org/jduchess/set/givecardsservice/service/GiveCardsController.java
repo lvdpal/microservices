@@ -12,6 +12,7 @@ import java.util.List;
 @RequestMapping("/cards")
 public class GiveCardsController {
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.POST, value="/draw", consumes="application/json; charset=UTF-8", produces = "application/json; charset=UTF-8")
     public GiveCardsResponse drawThreeCards(@RequestParam("numberOfCards") Integer numberOfCards, @RequestBody List<Card> gameCardsIn) {
         List<Card> drawnCards = new ArrayList<>(numberOfCards);
