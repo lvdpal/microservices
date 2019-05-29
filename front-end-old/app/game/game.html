@@ -1,0 +1,23 @@
+<div ng-controller="GameCtrl">
+	<H1>A Game of set</H1>
+	<table border='1'>
+		<tr ng-repeat="row in deckOfCards">
+		  <td ng-repeat="card in row" ng-click="selectCard(card)" id="card{{card.id}}"
+			  width="360px" height="100px" align="center">
+			<p ng-bind-html="drawCard(card) | to_trusted"></p>
+		  </td>
+		</tr>
+	</table>
+	<span>gameId: {{gameId}}</span><br>
+	<span>selectedCards: {{selectedCards}}</span><br>
+	<span>validSet: {{validSet}}</span><br>
+	<span>score: {{score}}</span><br>
+	<span>highscore: {{highScore}}</span> <br>
+	<div>
+		<button ng-click="startGame()" class="md-raised md-button md-ink-ripple">START</button>
+		<button ng-click="checkSet()" class="md-raised md-button md-ink-ripple">CHECK</button>
+		<button ng-click="extraCards()" class="md-raised md-button md-ink-ripple">EXTRA</button>
+		<button ng-click="containsSet()" class="md-raised md-button md-ink-ripple">CONTAINS</button>
+		<button ng-click="stopGame()" class="md-raised md-button md-ink-ripple">STOP</button>
+	</div>
+</div>
