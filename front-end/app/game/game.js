@@ -94,48 +94,27 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
 	function recieveDeck() {
 		// console.log('recieve deck');
 		$http.post('http://localhost:8092/cards/draw?numberOfCards=12', $scope.game).then(function(response) {
-			$scope.game = response.data.gameCards;
+			$scope.game = response.data.gameCardsOut;
+			// console.log($scope.game);
 			$scope.deckOfCards = [];
 			var newCards = response.data.drawnCards;
-			if (angular.isDefined(newCards) && newCards.length > 0) {
-				// maybe we need to fill some empty spots in the rows after we deleted some cards
-				var counter = 0;
-				angular.forEach($scope.deckOfCards, function(row) {
-					while (row.length < 3) {
-						row.push(newCards[counter]);
-						counter = counter + 1;
-					}
-				});
-				// no empty spots found so add all the cards to the deck
-				if (counter === 0) {
-					$scope.deckOfCards.push(newCards);
+			var row = [];
+			angular.forEach(newCards, function(card) {
+				row.push(card);
+				if (row.length === 3) {
+					$scope.deckOfCards.push(row);
+					row = [];
 				}
-			} else {
-				// No cards found realine cards
-				var allCardsLeft = [];
-				angular.forEach($scope.deckOfCards, function(row) {
-					angular.forEach(row, function(card) {
-						allCardsLeft.push(card);
-					});
-				});
-				$scope.deckOfCards = [];
-				var row = [];
-				angular.forEach(allCardsLeft, function(card) {
-					row.push(card);
-					if (row.length === 3) {
-						$scope.deckOfCards.push(row);
-						row = [];
-					}
-				});
-			}
+			});
 		});
 	}
 
     function drawThreeCards() {
     	// console.log('draw cards');
+    	// console.log($scope.game);
     	$http.post('http://localhost:8092/cards/draw?numberOfCards=3', $scope.game).then(function(response) {
         	// console.log('we found some cards: ', response);
-        	$scope.game = response.data.gameCards;
+        	$scope.game = response.data.gameCardsOut;
         	var newCards = response.data.drawnCards;
         	if (angular.isDefined(newCards) && newCards.length > 0) {
 	        	// maybe we need to fill some empty spots in the rows after we deleted some cards
@@ -229,13 +208,13 @@ angular.module('myApp.game', ['ngRoute', 'ngSanitize'])
     }
 
     function checkForMoreSets() {
-    	var cards = [];
+    	var board = [];
 		angular.forEach($scope.deckOfCards, function(row) {
 			angular.forEach(row, function(card) {
-				cards.push(card);
+				board.push(card);
 			});
 		});
-    	$http.post('http://localhost/containsSet:8091', cards).then(function(response){
+    	$http.post('http://localhost/containsSet:8091', board).then(function(response){
     		$scope.moreSets = response.data;
     	}, function (response) {
             // console.log('Error: ', response);
